@@ -1,22 +1,23 @@
-import 'package:flutter/material.dart';
-import 'screens/analysis_screen.dart';
+import 'package:analysis_app/screens/home_screen.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const DimenScan());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class DimenScan extends StatelessWidget {
+  const DimenScan({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Analysis App',
+    return ShadcnApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
+        colorScheme: ColorSchemes.lightGray(),
+        radius: 0.5,
       ),
-      home: const AnalysisScreen(),
+      title: 'Analysis App',
+      home: const HomeScreen(),
     );
   }
 }
