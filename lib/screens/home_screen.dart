@@ -5,8 +5,22 @@ import 'package:analysis_app/screens/analysis_screen.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart'; // Import
 
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 
 class HomeScreen extends StatelessWidget {
+  Future<void> _pickImage(BuildContext context) async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AnalysisScreen(imagePath: pickedFile.path),
+        ),
+      );
+    }
+  }
+
   const HomeScreen({super.key});
 
   @override
@@ -50,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                 Expanded(
                     child: quickActionButton(
                         'Take Selfie', Icons.camera_alt, () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => AnalysisScreen(),));
+                          _pickImage(context);
                     })),
                 Expanded(
                     child: quickActionButton(
