@@ -1,0 +1,2 @@
+C:/Users/salma/AndroidStudioProjects/DimenScan/android/app/.cxx/RelWithDebInfo/f693t6u2/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/salma/AndroidStudioProjects/DimenScan/android/app/.cxx/RelWithDebInfo/f693t6u2/armeabi-v7a/CMakeFiles/rebuild_cache.dir

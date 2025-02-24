@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
@@ -6,10 +7,12 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart'; /
 
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart';
 
 class HomeScreen extends StatelessWidget {
-  Future<void> _pickImage(BuildContext context) async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+  Future<void> _pickImage(bool isUpload, BuildContext context) async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: isUpload ? ImageSource.gallery : ImageSource.camera);
 
     if (pickedFile != null) {
       Navigator.push(
@@ -64,11 +67,13 @@ class HomeScreen extends StatelessWidget {
                 Expanded(
                     child: quickActionButton(
                         'Take Selfie', Icons.camera_alt, () {
-                          _pickImage(context);
+                      _pickImage(false,context);
                     })),
                 Expanded(
                     child: quickActionButton(
-                        'Upload Photo', Icons.upload_file_rounded, () {})),
+                        'Upload Photo', Icons.upload_file_rounded, () {
+                  _pickImage(true,context);
+                })),
               ],
             ),
             const SizedBox(
@@ -89,7 +94,7 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
                   child: MasonryGridView.count(
-                    crossAxisCount: 3,
+                    crossAxisCount: 2,
                     mainAxisSpacing: 6,
                     crossAxisSpacing: 5,
                     itemBuilder: (context, index) {
@@ -125,7 +130,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget quickActionButton(String title, IconData icon, VoidCallback onPressed) {
+  Widget quickActionButton(
+      String title, IconData icon, VoidCallback onPressed) {
     return PrimaryButton(
         size: ButtonSize.large,
         shape: ButtonShape.rectangle,

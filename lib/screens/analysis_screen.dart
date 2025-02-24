@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 
+import 'package:insta_image_viewer/insta_image_viewer.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../services/api_service.dart';
@@ -8,7 +9,7 @@ import '../services/api_service.dart';
 class AnalysisScreen extends StatefulWidget {
   final String imagePath;
 
-  const AnalysisScreen({Key? key, required this.imagePath}) : super(key: key);
+  const AnalysisScreen({super.key, required this.imagePath});
 
   @override
   State<AnalysisScreen> createState() => _AnalysisScreenState();
@@ -78,32 +79,34 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
             // 📸 Annotated Image Display
             Card(
               padding: const EdgeInsets.all(4),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : (_responseData != null &&
-                            _responseData!["image_path"] != null)
-                        ? Image.file(
-                            File(_responseData!["image_path"]),
-                            height: 200,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          )
-                        : (_responseData != null &&
-                                _responseData!["image_path"] != null)
-                            ? Image.memory(
-                                base64Decode(_responseData!["image_path"]),
-                                height: 200,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.file(
-                                File(widget.imagePath),
-                                height: 200,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
+              child: InstaImageViewer(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : (_responseData != null &&
+                              _responseData!["image_path"] != null)
+                          ? Image.file(
+                              File(_responseData!["image_path"]),
+                              height: MediaQuery.of(context).size.height / 2,
+                              width: double.infinity,
+                              fit: BoxFit.fitWidth,
+                            )
+                          : (_responseData != null &&
+                                  _responseData!["image_path"] != null)
+                              ? Image.memory(
+                                  base64Decode(_responseData!["image_path"]),
+                                  height: 200,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.file(
+                                  File(widget.imagePath),
+                                  height: 200,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                ),
               ),
             ),
             const SizedBox(height: 20),
