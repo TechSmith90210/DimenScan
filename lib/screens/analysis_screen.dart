@@ -1,9 +1,6 @@
 import 'dart:io';
-import 'dart:convert';
-
+import 'package:flutter/material.dart';
 import 'package:insta_image_viewer/insta_image_viewer.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart';
-
 import '../services/api_service.dart';
 
 class AnalysisScreen extends StatefulWidget {
@@ -23,13 +20,13 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   @override
   void initState() {
     super.initState();
-    _uploadImage();
+    _analyzeImage();
   }
 
-  Future<void> _uploadImage() async {
-    var result = await ApiService.uploadImage(widget.imagePath);
+  Future<void> _analyzeImage() async {
+    var result = await ApiService.analyzeImage(widget.imagePath);
 
-    print("API Response: $result"); // ✅ Print the full response for debugging
+    print("API Response: $result"); // ✅ Debugging
 
     if (result!.containsKey("error")) {
       setState(() {
@@ -47,65 +44,42 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      headers: [
-        AppBar(
-          header: const Text(
-            'Analysis Results',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-          ),
-          title: const Text(
-            'Success',
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
-          ),
-          leading: [
-            OutlineButton(
-              density: ButtonDensity.icon,
-              size: ButtonSize.normal,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Icon(Icons.arrow_back),
-            ),
-          ],
-        )
-      ],
-      child: SingleChildScrollView(
+      appBar: AppBar(
+        title: const Text(
+          'Analysis Results',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 10,
           children: [
             // 📸 Annotated Image Display
             Card(
-              padding: const EdgeInsets.all(4),
               child: InstaImageViewer(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : (_responseData != null &&
-                              _responseData!["image_path"] != null)
-                          ? Image.file(
-                              File(_responseData!["image_path"]),
-                              height: MediaQuery.of(context).size.height / 2,
-                              width: double.infinity,
-                              fit: BoxFit.fitWidth,
-                            )
-                          : (_responseData != null &&
-                                  _responseData!["image_path"] != null)
-                              ? Image.memory(
-                                  base64Decode(_responseData!["image_path"]),
-                                  height: 200,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                )
-                              : Image.file(
-                                  File(widget.imagePath),
-                                  height: 200,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
+                      _responseData!["image_path"] != null)
+                      ? Image.file(
+                    File(widget.imagePath),
+                    height: 300,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  )
+                      : Image.file(
+                    File(widget.imagePath),
+                    height: 300,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -121,8 +95,8 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
               ),
             ] else if (_responseData != null) ...[
               _buildDetectionSummary(),
-              _buildFaceDetails(),
               _buildObjectDetails(),
+              _buildEstimationDetails(),
             ],
           ],
         ),
@@ -130,59 +104,44 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     );
   }
 
-  // 🔹 Detection Summary
   Widget _buildDetectionSummary() {
-    List<dynamic> faces = _responseData?["face_details"] ?? [];
-    List<dynamic> objects = _responseData?["object_predictions"] ?? [];
+    List<dynamic> predictions = _responseData?["classification"]?["predictions"] ?? [];
+    Map<String, dynamic>? estimation = _responseData?["estimation"];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Detection Results:',
+          'Classification Results:',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        Text(
-          "${faces.length} Face(s) and ${objects.length} Object(s) Detected",
-          style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              fontStyle: FontStyle.italic),
-        ),
+        for (var prediction in predictions)
+          _buildDetailRow(
+            prediction["label"],
+            '${(prediction["confidence"] * 100).toStringAsFixed(2)}%',
+          ),
+
+        if (estimation != null) ...[
+          const SizedBox(height: 20),
+          const Text(
+            'Estimation Results:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          _buildDetailRow("Estimated Height", "${estimation["estimated_height"]} cm"),
+          _buildDetailRow("Estimated Weight", "${estimation["estimated_weight"]} kg"),
+          _buildDetailRow("Estimated Age", "${estimation["estimated_age"]} years"),
+        ]
       ],
     );
   }
 
-  // 🔹 Face Details
-  Widget _buildFaceDetails() {
-    List<dynamic> faces = _responseData?["face_details"] ?? [];
-
-    if (faces.isEmpty) return const SizedBox();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // _sectionHeader("Face Details"),
-        for (int i = 0; i < faces.length; i++) ...[
-          _sectionHeader("Face ${i + 1}"),
-          _buildDetailRow('Width', '${faces[i]["width_cm"]} cm'),
-          _buildDetailRow('Height', '${faces[i]["height_cm"]} cm'),
-          _buildDetailRow('Bounding Box',
-              'X: ${faces[i]["bounding_box"]["x"]}, Y: ${faces[i]["bounding_box"]["y"]}'),
-          const SizedBox(height: 10),
-        ],
-      ],
-    );
-  }
 
   // 🔹 Object Details
   Widget _buildObjectDetails() {
-    List<dynamic> objects = _responseData?["object_predictions"] ?? [];
+    List<dynamic> objects = _responseData?["classification"]?["object_predictions"] ?? [];
 
-    if (objects.isEmpty) {
-      return const SizedBox();
-    }
+    if (objects.isEmpty) return const SizedBox();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,6 +152,27 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
           _buildDetailRow('Confidence',
               '${(objects[i]["confidence"] * 100).toStringAsFixed(2)}%'),
           const SizedBox(height: 10),
+        ],
+      ],
+    );
+  }
+
+  // 🔹 Estimation Details
+  Widget _buildEstimationDetails() {
+    List<dynamic> parameters = _responseData?["estimation"]?["parameters"] ?? [];
+
+    if (parameters.isEmpty) return const SizedBox();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Estimated Characteristics:',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        for (var param in parameters) ...[
+          _buildDetailRow(param["name"], param["value"]),
         ],
       ],
     );
@@ -212,15 +192,15 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   // 🔹 Detail Row
   Widget _buildDetailRow(String label, String value) {
     return Card(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 16)),
-          Text(value,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 16)),
+            Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }

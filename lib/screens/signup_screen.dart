@@ -1,10 +1,10 @@
+import 'package:analysis_app/screens/home_screen.dart';
+import 'package:analysis_app/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'login_screen.dart';
-import 'analysis_screen.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({Key? key}) : super(key: key);
+  const SignupScreen({super.key});
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
@@ -34,7 +34,7 @@ class _SignupScreenState extends State<SignupScreen> {
       // For now, we'll just navigate to the analysis screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const AnalysisScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     }
   }
@@ -42,10 +42,6 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Account'),
-        centerTitle: true,
-      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -216,7 +212,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    Navigator.pop(context);
+                                    Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => LoginScreen(),));
                                   },
                               ),
                             ],

@@ -1,13 +1,9 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
-
 import 'package:analysis_app/screens/analysis_screen.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart'; // Import
-
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart';
 
 class HomeScreen extends StatelessWidget {
   Future<void> _pickImage(bool isUpload, BuildContext context) async {

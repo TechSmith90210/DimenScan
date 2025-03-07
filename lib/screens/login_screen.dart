@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'home_screen.dart';
 import 'signup_screen.dart';
-import 'analysis_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // For now, we'll just navigate to the analysis screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const AnalysisScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     }
   }
@@ -173,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    Navigator.push(
+                                    Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(builder: (context) => const SignupScreen()),
                                     );

@@ -1,47 +1,69 @@
-import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 
 class ApiService {
-  static const String baseUrl = "http://192.168.0.153:8000/upload"; // Update with your FastAPI URL
+  static const String baseUrl = "http://192.168.0.153:8000"; // Update with your FastAPI server IP
 
-  static Future<Map<String, dynamic>?> uploadImage(String imagePath) async {
+  // Analyze image (classification → estimation)
+  static Future<Map<String, dynamic>?> analyzeImage(String imagePath) async {
     try {
-      var request = http.MultipartRequest('POST', Uri.parse(baseUrl));
+      // Step 1: Classify the Image
+      var classificationResult = await classifyImage(imagePath);
+      if (classificationResult == null || classificationResult.containsKey("error")) {
+        return classificationResult; // Return error if classification fails
+      }
+
+      // Step 2: Estimate Characteristics
+      var estimationResult = await estimateCharacteristics(imagePath);
+      if (estimationResult == null || estimationResult.containsKey("error")) {
+        return estimationResult; // Return error if estimation fails
+      }
+
+      // Merge both responses
+      return {
+        "classification": classificationResult,
+        "estimation": estimationResult,
+      };
+    } catch (e) {
+      return {"error": "Analysis failed: $e"};
+    }
+  }
+
+  // Upload image for classification
+  static Future<Map<String, dynamic>?> classifyImage(String imagePath) async {
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse("$baseUrl/classify/"));
       request.files.add(await http.MultipartFile.fromPath('file', imagePath));
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        // Parse JSON response
-        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-
-        if (jsonResponse.containsKey('error')) {
-          return {"error": jsonResponse['error']};
-        }
-
-        // Extract base64 image data from response
-        String? base64Image = jsonResponse['annotated_image'];
-        if (base64Image != null && base64Image.isNotEmpty) {
-          // Decode base64 string to bytes
-          List<int> imageBytes = base64Decode(base64Image);
-
-          // Save annotated image to local storage
-          Directory tempDir = await getTemporaryDirectory();
-          File imageFile = File('${tempDir.path}/annotated.jpg');
-          await imageFile.writeAsBytes(imageBytes);
-
-          jsonResponse['image_path'] = imageFile.path; // Return saved image path
-        }
-
-        return jsonResponse;
+        return jsonDecode(response.body);
       } else {
-        return {"error": "Error: ${response.statusCode}\n${response.body}"};
+        return {"error": "Classification failed: ${response.statusCode}\n${response.body}"};
       }
     } catch (e) {
-      return {"error": "Upload failed: $e"};
+      return {"error": "Classification failed: $e"};
+    }
+  }
+
+  // Upload image for characteristic estimation
+  static Future<Map<String, dynamic>?> estimateCharacteristics(String imagePath) async {
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse("$baseUrl/estimate/"));
+      request.files.add(await http.MultipartFile.fromPath('file', imagePath));
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {"error": "Estimation failed: ${response.statusCode}\n${response.body}"};
+      }
+    } catch (e) {
+      return {"error": "Estimation failed: $e"};
     }
   }
 }

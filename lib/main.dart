@@ -1,4 +1,4 @@
-import 'package:analysis_app/screens/home_screen.dart';
+import 'package:analysis_app/screens/login_screen.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 void main() {
@@ -16,8 +16,8 @@ class DimenScan extends StatelessWidget {
         colorScheme: ColorSchemes.lightGray(),
         radius: 0.5,
       ),
-      title: 'Analysis App',
-      home: const HomeScreen(),
+      title: 'DimenScan',
+      home: const LoginScreen(),
     );
   }
 }
