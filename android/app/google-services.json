@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "111898066731",
+    "project_id": "dimenscan-1849e",
+    "storage_bucket": "dimenscan-1849e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111898066731:android:4f9efea5fc47b209734f6e",
+        "android_client_info": {
+          "package_name": "com.example.analysis_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7xojEfPBbKxh66VXoQKximbmAosnB3Ks"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

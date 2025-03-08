@@ -1,0 +1,2 @@
+C:/Users/salma/AndroidStudioProjects/DimenScan/android/app/.cxx/Debug/6p5h1j92/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/salma/AndroidStudioProjects/DimenScan/android/app/.cxx/Debug/6p5h1j92/x86_64/CMakeFiles/rebuild_cache.dir

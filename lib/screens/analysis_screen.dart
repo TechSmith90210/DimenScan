@@ -66,8 +66,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                   borderRadius: BorderRadius.circular(10),
                   child: _isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : (_responseData != null &&
-                      _responseData!["image_path"] != null)
+                      : (_responseData != null && _responseData!["image_path"] != null)
                       ? Image.file(
                     File(widget.imagePath),
                     height: 300,
@@ -94,9 +93,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                 style: const TextStyle(color: Colors.red, fontSize: 16),
               ),
             ] else if (_responseData != null) ...[
-              _buildDetectionSummary(),
-              _buildObjectDetails(),
-              _buildEstimationDetails(),
+              _buildDetectionSummary(), // ✅ Face Detection → Classification → Estimation
             ],
           ],
         ),
@@ -104,26 +101,44 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     );
   }
 
+  /// 🔹 **Build API Response Summary in Correct Order**
   Widget _buildDetectionSummary() {
+    List<dynamic> faces = _responseData?["face_detection"]?["faces"] ?? [];
     List<dynamic> predictions = _responseData?["classification"]?["predictions"] ?? [];
     Map<String, dynamic>? estimation = _responseData?["estimation"];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Classification Results:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        for (var prediction in predictions)
-          _buildDetailRow(
-            prediction["label"],
-            '${(prediction["confidence"] * 100).toStringAsFixed(2)}%',
+        // 🟢 Face Detection First
+        if (faces.isNotEmpty) ...[
+          const Text(
+            'Face Detection Results:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-
-        if (estimation != null) ...[
+          const SizedBox(height: 10),
+          for (var face in faces)
+            _buildDetailRow("Face Size", "Width: ${face["width_cm"]} cm, Height: ${face["height_cm"]} cm"),
           const SizedBox(height: 20),
+        ],
+
+        // 🔵 Classification Next
+        if (predictions.isNotEmpty) ...[
+          const Text(
+            'Classification Results:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          for (var prediction in predictions)
+            _buildDetailRow(
+              prediction["label"],
+              '${(prediction["confidence"] * 100).toStringAsFixed(2)}%',
+            ),
+          const SizedBox(height: 20),
+        ],
+
+        // 🟠 Estimation Last
+        if (estimation != null) ...[
           const Text(
             'Estimation Results:',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -131,65 +146,12 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
           _buildDetailRow("Estimated Height", "${estimation["estimated_height"]} cm"),
           _buildDetailRow("Estimated Weight", "${estimation["estimated_weight"]} kg"),
           _buildDetailRow("Estimated Age", "${estimation["estimated_age"]} years"),
-        ]
-      ],
-    );
-  }
-
-
-  // 🔹 Object Details
-  Widget _buildObjectDetails() {
-    List<dynamic> objects = _responseData?["classification"]?["object_predictions"] ?? [];
-
-    if (objects.isEmpty) return const SizedBox();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (int i = 0; i < objects.length; i++) ...[
-          _sectionHeader("Object ${i + 1}"),
-          _buildDetailRow('Label', objects[i]["label"]),
-          _buildDetailRow('Confidence',
-              '${(objects[i]["confidence"] * 100).toStringAsFixed(2)}%'),
-          const SizedBox(height: 10),
         ],
       ],
     );
   }
 
-  // 🔹 Estimation Details
-  Widget _buildEstimationDetails() {
-    List<dynamic> parameters = _responseData?["estimation"]?["parameters"] ?? [];
-
-    if (parameters.isEmpty) return const SizedBox();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Estimated Characteristics:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        for (var param in parameters) ...[
-          _buildDetailRow(param["name"], param["value"]),
-        ],
-      ],
-    );
-  }
-
-  // 🔹 Section Header
-  Widget _sectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  // 🔹 Detail Row
+  /// 🔹 **Reusable Detail Row**
   Widget _buildDetailRow(String label, String value) {
     return Card(
       child: Padding(

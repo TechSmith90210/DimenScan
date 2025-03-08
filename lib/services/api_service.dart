@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "http://192.168.0.153:8000"; // Update with your FastAPI server IP
+  static const String baseUrl = "https://e800-182-66-237-180.ngrok-free.app"; // Update with your FastAPI server IP
 
-  // Analyze image (classification → estimation)
+  // Analyze image (classification → estimation → detect faces)
   static Future<Map<String, dynamic>?> analyzeImage(String imagePath) async {
     try {
       // Step 1: Classify the Image
@@ -19,10 +19,17 @@ class ApiService {
         return estimationResult; // Return error if estimation fails
       }
 
-      // Merge both responses
+      // Step 3: Detect Faces
+      var faceDetectionResult = await detectFaces(imagePath);
+      if (faceDetectionResult == null || faceDetectionResult.containsKey("error")) {
+        return faceDetectionResult; // Return error if face detection fails
+      }
+
+      // Merge all responses
       return {
         "classification": classificationResult,
         "estimation": estimationResult,
+        "face_detection": faceDetectionResult,
       };
     } catch (e) {
       return {"error": "Analysis failed: $e"};
@@ -64,6 +71,25 @@ class ApiService {
       }
     } catch (e) {
       return {"error": "Estimation failed: $e"};
+    }
+  }
+
+  // Upload image for face detection
+  static Future<Map<String, dynamic>?> detectFaces(String imagePath) async {
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse("$baseUrl/detect_faces/"));
+      request.files.add(await http.MultipartFile.fromPath('file', imagePath));
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {"error": "Face detection failed: ${response.statusCode}\n${response.body}"};
+      }
+    } catch (e) {
+      return {"error": "Face detection failed: $e"};
     }
   }
 }
