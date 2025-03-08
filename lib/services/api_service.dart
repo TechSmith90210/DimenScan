@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "https://e800-182-66-237-180.ngrok-free.app"; // Update with your FastAPI server IP
+  static const String baseUrl = "https://beb9-182-66-237-180.ngrok-free.app"; // Update with your FastAPI server IP
 
   // Analyze image (classification → estimation → detect faces)
   static Future<Map<String, dynamic>?> analyzeImage(String imagePath) async {
